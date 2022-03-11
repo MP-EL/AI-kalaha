@@ -105,39 +105,11 @@ class KalahaBoard:
 
         return True
 
-    def _get_first_cup(self, player):
-        return player*self.number_of_cups + player
 
-    def _get_last_cup(self, player):
-        return self._get_first_cup(player) + self.number_of_cups - 1
-
-    def _all_empty_number_of_cups(self, player):
-        player_board = self._get_player_board(player)
-        for stone in player_board[:-1]:
-            if stone > 0:
-                return False
-        return True
-
-    def _check_board_consistency(self, board):
-        expected_stones = 2*self.stones*self.number_of_cups
-
-        actual_stones = 0
-        for s in board:
-            actual_stones += s
-
-        return actual_stones == expected_stones
-
-    def _get_house(self, player):
-        return self._player_houses[player]
 
     def get_board(self):
         return list(self.board)
 
-    def current_player(self):
-        return self.player
-    
-    def _get_player_board(self, player):
-        return self.get_board()[player*self.number_of_cups + player : player*self.number_of_cups + player + self.number_of_cups + 1]
 
     def game_over(self):
         player_board_one = self._get_player_board(0)
@@ -175,6 +147,9 @@ class KalahaBoard:
 
         self.board = list(board)
 
+    def current_player(self):
+        return self.player
+
     def set_current_player(self, player):
         if player >= 0 and player < 2:
             self.player = player
@@ -183,6 +158,9 @@ class KalahaBoard:
 
     def current_player_score(self):
         return self.score()[self.current_player()]
+
+    def _get_house(self, player):
+        return self._player_houses[player]
 
     def get_house_id(self, player):
         return self._get_house(player)
@@ -203,6 +181,29 @@ class KalahaBoard:
             except:
                 print("Pick a valid number")
         return question
+
+    def _get_first_cup(self, player):
+        return player*self.number_of_cups + player
+
+    def _get_last_cup(self, player):
+        return self._get_first_cup(player) + self.number_of_cups - 1
+
+    def _all_empty_number_of_cups(self, player):
+        player_board = self._get_player_board(player)
+        for stone in player_board[:-1]:
+            if stone > 0:
+                return False
+        return True
+
+    def _check_board_consistency(self, board):
+        expected_stones = 2*self.stones*self.number_of_cups
+        actual_stones = 0
+        for s in board:
+            actual_stones += s
+        return actual_stones == expected_stones
+        
+    def _get_player_board(self, player):
+        return self.get_board()[player*self.number_of_cups + player : player*self.number_of_cups + player + self.number_of_cups + 1]
 
 class KalahaFight: #(KalahaBoard):
     def __init__(self, number_of_cups, number_of_stones):
