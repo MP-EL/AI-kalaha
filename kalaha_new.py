@@ -1,7 +1,4 @@
-##kalaha proj
-
 import os
-from pickletools import ArgumentDescriptor
 from time import sleep
 import numpy as np
 
@@ -10,7 +7,6 @@ def signal_handler(signal, frame):
     print("\nprogram exiting gracefully")
     sys.exit()
 signal.signal(signal.SIGINT, signal_handler)
-
 
 def random_move(board):
     move = np.random.choice(board.allowed_moves())
@@ -51,7 +47,6 @@ class KalahaBoard:
         print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
         print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
         BP2.reverse()
-        # print(list(self.board))
 
     def move(self, b):
         if b not in self.allowed_moves():
@@ -105,11 +100,8 @@ class KalahaBoard:
 
         return True
 
-
-
     def get_board(self):
         return list(self.board)
-
 
     def game_over(self):
         player_board_one = self._get_player_board(0)
@@ -250,9 +242,7 @@ class KalahaFight: #(KalahaBoard):
             else:
                 # draws += 1
                 print("its a draw")
-
         # current_game += 1
-
 
 def main():
     nr1 = KalahaFight(6, 6)
