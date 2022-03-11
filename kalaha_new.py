@@ -46,10 +46,10 @@ class KalahaBoard:
         else:
             print("allowed moves", self.allowed_moves())
         BP2.reverse()
-        print('\nPocket # :  6  5  4  3  2  1')
-        print('P2 -->', BP2[:1], BP2[1:7])
-        print('P1 --> ', '  ', BP1[0:6],BP1[6:])
-        print('Pocket # :  1  2  3  4  5  6')
+        print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
+        print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
+        print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
+        print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
         BP2.reverse()
         # print(list(self.board))
 
