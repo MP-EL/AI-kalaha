@@ -1,5 +1,8 @@
 ##kalaha proj
+
 import os
+from pickletools import ArgumentDescriptor
+from time import sleep
 import numpy as np
 
 import sys, signal
@@ -7,6 +10,15 @@ def signal_handler(signal, frame):
     print("\nprogram exiting gracefully")
     sys.exit()
 signal.signal(signal.SIGINT, signal_handler)
+
+
+def random_move(board):
+    move = np.random.choice(board.allowed_moves())
+    return move
+
+# def minimax(board):
+#     move = et eller andet
+#     return move
 
 class KalahaBoard:
     def __init__(self, number_of_cups, number_of_stones):
@@ -24,12 +36,15 @@ class KalahaBoard:
         self.player = 0
 
     def print_board(self):
-        # os.system('cls' if os.name == 'nt' else 'clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
         BP1 = self.board[0:self.number_of_cups + 1]
         BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
         # print(BP1)
         # print(BP2)
-        print("allowed moves", self.allowed_moves())
+        if self.current_player() == 0:
+            print("allowed moves", [i + 1 for i in self.allowed_moves()])
+        else:
+            print("allowed moves", self.allowed_moves())
         BP2.reverse()
         print('\nPocket # :  6  5  4  3  2  1')
         print('P2 -->', BP2[:1], BP2[1:7])
@@ -63,11 +78,11 @@ class KalahaBoard:
             self.board[current_cup] += 1
             stones_to_distribute -= 1
 
-        # Seed in empty cup -> take stones on the opponents side
+        # stone in empty cup -> take stones on the opponents side
         if ( current_cup != self.get_house_id(self.current_player()) and
                 self.board[current_cup] == 1 and
                 current_cup >= self._get_first_cup(self.current_player()) and
-                current_cup < self._get_last_cup(self.current_player()) ):
+                current_cup < self._get_last_cup(self.current_player())):
             opposite_cup = current_cup + self.number_of_cups+1
             if opposite_cup >= len(self.board):
                 opposite_cup -= len(self.board)
@@ -98,8 +113,8 @@ class KalahaBoard:
 
     def _all_empty_number_of_cups(self, player):
         player_board = self._get_player_board(player)
-        for seed in player_board[:-1]:
-            if seed > 0:
+        for stone in player_board[:-1]:
+            if stone > 0:
                 return False
         return True
 
@@ -129,13 +144,13 @@ class KalahaBoard:
         player_board_two = self._get_player_board(1)
 
         player_one_empty = True
-        for seed in player_board_one[:-1]:
-            if seed > 0:
+        for stone in player_board_one[:-1]:
+            if stone > 0:
                 player_one_empty = False
 
         player_two_empty = True
-        for seed in player_board_two[:-1]:
-            if seed > 0:
+        for stone in player_board_two[:-1]:
+            if stone > 0:
                 player_two_empty = False
 
         return player_one_empty or player_two_empty
@@ -204,8 +219,10 @@ class KalahaFight: #(KalahaBoard):
                 valid = board.move(board.get_input())
                 # valid = board.move(agent1.get_next_move(board))
             else:
-                valid = board.move(board.get_input())
+                # valid = board.move(board.get_input())
                 # valid = board.move(agent2.get_next_move(board))
+                sleep(0.5)
+                valid = board.move(random_move(board))
             if not valid:
                 if last_invalid_player == board.current_player():
                     invalid_count += 1
