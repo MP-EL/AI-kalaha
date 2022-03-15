@@ -18,18 +18,18 @@ class MinimaxAgent:
     def __init__(self, max_depth, player):
         self.max_depth = max_depth
         self.player = player
+        self.moves_and_scores = []
 
     def get_move(self, board):
-        moves_and_scores = []
+        self.moves_and_scores = []
         moves = board.allowed_moves()
         # player = board.current_player()
         for move in moves:
-            moves_and_scores.append(self._minimax(board, True, 0, move))
-        print(moves_and_scores)
-        lst = [i for i in moves_and_scores[0]]
+            self.moves_and_scores.append(self._minimax(board, True, 0, move))
+        lst = [i for i in self.moves_and_scores[0]]
         best_move = np.argmax(lst)
 
-        print(best_move)
+        # print(best_move)
         return moves[best_move]
 
     def _minimax(self, board, is_max_player, current_depth, move):
@@ -41,19 +41,24 @@ class MinimaxAgent:
         moves = new_board.allowed_moves()
         best_value = float('-inf') if is_max_player else float('inf')
 
+        # assert moves != None
+        
+        if len(moves) == 0:
+            return 0, ""
+
         for move in moves:
             move_score, move_child = self._minimax(new_board, not is_max_player, current_depth + 1, move)
-
+            
             if is_max_player and best_value <= move_score:
                 best_value = move_score
                 move_target = move
             elif (not is_max_player) and best_value >= move_score:
                 best_value = move_score
                 move_target = move
-
-
+            else:
+                move_target = move
         return best_value, move_target  
-
+        # except Exception as e: print(e)
 
     
 
@@ -65,6 +70,7 @@ class KalahaBoard:
         self.reset_board()
         self._player_houses = { 0: self.number_of_cups*(1),
                                 1: self.number_of_cups*(2) + 1}
+
         
     def reset_board(self):
         self.BP1 = [self.stones for i in range(self.number_of_cups)] + [0]
@@ -73,7 +79,7 @@ class KalahaBoard:
         self.player = 0
 
     def print_board(self):
-        # os.system('cls' if os.name == 'nt' else 'clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
         
         BP1 = self.board[0:self.number_of_cups + 1]
         BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
@@ -89,6 +95,7 @@ class KalahaBoard:
         print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
         print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
         BP2.reverse()
+        print(self.score())
 
     def move(self, b):
         if b not in self.allowed_moves():
@@ -104,6 +111,7 @@ class KalahaBoard:
 
         current_cup = b
         while stones_to_distribute > 0:
+            
             current_cup = current_cup+1
 
             if current_cup >= len(self.board):
@@ -139,7 +147,6 @@ class KalahaBoard:
 
         if not self._check_board_consistency(self.board):
             raise ValueError('The board is not consistent, some error must have happened. Old Board: ' + str(old_board) + ", move = " + str(b) +", new Board: " + str(self.get_board()))
-
         return True
 
     def get_board(self):
@@ -158,6 +165,11 @@ class KalahaBoard:
         for stone in player_board_two[:-1]:
             if stone > 0:
                 player_two_empty = False
+        
+        scores = self.score()
+
+        if scores[0] >=36 or scores[1] >=36:
+            return True
 
         return player_one_empty or player_two_empty
 
@@ -255,23 +267,23 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-        agent1 = MinimaxAgent(6, 0)
-        # agent2 = MinimaxAgent(6, 1)
-
+        minimax_agent1 = MinimaxAgent(5, 0)
+        minimax_agent2 = MinimaxAgent(5, 1)
         last_invalid_player = None
         invalid_count = 0
         while not board.game_over():
             board.print_board()
             if board.current_player() == 0:
                 print(f'Player {board.current_player() + 1} choose a cup \n')
-                valid = board.move(agent1.get_move(board))
+                #valid = board.move(random_move(board))
+                valid = board.move(minimax_agent1.get_move(board))
                 # valid = board.move(agent1.get_next_move(board))
-                sleep(0.1)
+                sleep(0.2)
             else:
                 print(f'Player {board.current_player() + 1} choose a cup \n')
-                valid = board.move(random_move(board))
+                valid = board.move(minimax_agent2.get_move(board))
                 # valid = board.move(agent2.get_next_move(board))
-                sleep(0.1)
+                sleep(0.2)
                 # valid = board.move(random_move(board))
             if not valid:
                 if last_invalid_player == board.current_player():
@@ -281,6 +293,7 @@ class KalahaFight: #(KalahaBoard):
                     last_invalid_player = board.current_player()
             if invalid_count > 2:
                 break
+            board.print_board()
 
         if invalid_count > 2:
             if last_invalid_player == 0:
