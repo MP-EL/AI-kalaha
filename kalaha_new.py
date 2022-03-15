@@ -1,4 +1,6 @@
+import enum
 import os
+from random import random
 from time import sleep
 import numpy as np
 
@@ -12,9 +14,48 @@ def random_move(board):
     move = np.random.choice(board.allowed_moves())
     return move
 
-# def minimax(board):
-#     move = et eller andet
-#     return move
+class MinimaxAgent:
+    def __init__(self, max_depth, player):
+        self.max_depth = max_depth
+        self.player = player
+
+    def get_move(self, board):
+        moves_and_scores = []
+        moves = board.allowed_moves()
+        # player = board.current_player()
+        for move in moves:
+            moves_and_scores.append(self._minimax(board, True, 0, move))
+        print(moves_and_scores)
+        lst = [i for i in moves_and_scores[0]]
+        best_move = np.argmax(lst)
+
+        print(best_move)
+        return moves[best_move]
+
+    def _minimax(self, board, is_max_player, current_depth, move):
+        if current_depth == self.max_depth:
+            return board.score()[self.player], ""
+        
+        new_board = board.copy()
+        new_board.move(move)
+        moves = new_board.allowed_moves()
+        best_value = float('-inf') if is_max_player else float('inf')
+
+        for move in moves:
+            move_score, move_child = self._minimax(new_board, not is_max_player, current_depth + 1, move)
+
+            if is_max_player and best_value <= move_score:
+                best_value = move_score
+                move_target = move
+            elif (not is_max_player) and best_value >= move_score:
+                best_value = move_score
+                move_target = move
+
+
+        return best_value, move_target  
+
+
+    
 
 class KalahaBoard:
     def __init__(self, number_of_cups, number_of_stones):
@@ -32,7 +73,8 @@ class KalahaBoard:
         self.player = 0
 
     def print_board(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        # os.system('cls' if os.name == 'nt' else 'clear')
+        
         BP1 = self.board[0:self.number_of_cups + 1]
         BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
         # print(BP1)
@@ -197,6 +239,15 @@ class KalahaBoard:
     def _get_player_board(self, player):
         return self.get_board()[player*self.number_of_cups + player : player*self.number_of_cups + player + self.number_of_cups + 1]
 
+    def copy(self):
+        board = KalahaBoard(self.number_of_cups, self.stones)
+
+        board.set_board(list(self.board))
+        board.set_current_player(self.player)
+
+
+        return board
+
 class KalahaFight: #(KalahaBoard):
     def __init__(self, number_of_cups, number_of_stones):
         self.number_of_cups = number_of_cups
@@ -204,18 +255,24 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
+        agent1 = MinimaxAgent(6, 0)
+        # agent2 = MinimaxAgent(6, 1)
+
         last_invalid_player = None
         invalid_count = 0
         while not board.game_over():
             board.print_board()
             if board.current_player() == 0:
-                valid = board.move(board.get_input())
+                print(f'Player {board.current_player() + 1} choose a cup \n')
+                valid = board.move(agent1.get_move(board))
                 # valid = board.move(agent1.get_next_move(board))
+                sleep(0.1)
             else:
-                # valid = board.move(board.get_input())
-                # valid = board.move(agent2.get_next_move(board))
-                sleep(0.5)
+                print(f'Player {board.current_player() + 1} choose a cup \n')
                 valid = board.move(random_move(board))
+                # valid = board.move(agent2.get_next_move(board))
+                sleep(0.1)
+                # valid = board.move(random_move(board))
             if not valid:
                 if last_invalid_player == board.current_player():
                     invalid_count += 1
@@ -225,7 +282,7 @@ class KalahaFight: #(KalahaBoard):
             if invalid_count > 2:
                 break
 
-        if invalid_count > 10:
+        if invalid_count > 2:
             if last_invalid_player == 0:
                 # wins_agent1 += 1
                 print("player 1 wins")
