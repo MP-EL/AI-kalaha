@@ -1,8 +1,8 @@
 import enum
 import os
-from random import random
 from time import sleep
 import numpy as np
+import random
 
 import sys, signal
 def signal_handler(signal, frame):
@@ -15,52 +15,52 @@ def random_move(board):
     return move
 
 class MinimaxAgent:
-    def __init__(self, max_depth, player):
+    def __init__(self, max_depth=4):
         self.max_depth = max_depth
-        self.player = player
-        self.moves_and_scores = []
 
     def get_move(self, board):
-        self.moves_and_scores = []
+
+        moves_and_scores = []
         moves = board.allowed_moves()
         # player = board.current_player()
+        if len(moves) == 1:
+            return moves[0]
         for move in moves:
-            self.moves_and_scores.append(self._minimax(board, True, 0, move))
-        lst = [i for i in self.moves_and_scores[0]]
-        best_move = np.argmax(lst)
+            moves_and_scores.append([self._minimax(board, True, 0, move), move])
+        max_score = max([i[0] for i in moves_and_scores])
 
-        # print(best_move)
-        return moves[best_move]
+        #vælg et random move ud af dem der har samme score:
+        best_moves = []
+        for move_and_score in moves_and_scores:
+            if move_and_score[0] == max_score:
+                best_moves.append(move_and_score[1])
+        rand = random.choice([i for i in best_moves])
+        return rand
 
     def _minimax(self, board, is_max_player, current_depth, move):
         if current_depth == self.max_depth:
-            return board.score()[self.player], ""
+            return board.score()[board.current_player()]
         
         new_board = board.copy()
         new_board.move(move)
         moves = new_board.allowed_moves()
         best_value = float('-inf') if is_max_player else float('inf')
 
-        # assert moves != None
-        
-        if len(moves) == 0:
-            return 0, ""
-
         for move in moves:
-            move_score, move_child = self._minimax(new_board, not is_max_player, current_depth + 1, move)
-            
-            if is_max_player and best_value <= move_score:
-                best_value = move_score
-                move_target = move
-            elif (not is_max_player) and best_value >= move_score:
-                best_value = move_score
-                move_target = move
-            else:
-                move_target = move
-        return best_value, move_target  
-        # except Exception as e: print(e)
+            move_score = self._minimax(new_board, not is_max_player, current_depth + 1, move)
 
-    
+            # if is_max_player and best_value <= move_score:
+            #     best_value = move_score
+            #     move_target = move
+            # elif (not is_max_player) and best_value >= move_score:
+            #     best_value = move_score
+            #     move_target = move
+            if is_max_player:
+                best_value = max(move_score, best_value)
+            else:
+                best_value = min(move_score, best_value)
+
+        return best_value 
 
 class KalahaBoard:
     def __init__(self, number_of_cups, number_of_stones):
@@ -70,7 +70,6 @@ class KalahaBoard:
         self.reset_board()
         self._player_houses = { 0: self.number_of_cups*(1),
                                 1: self.number_of_cups*(2) + 1}
-
         
     def reset_board(self):
         self.BP1 = [self.stones for i in range(self.number_of_cups)] + [0]
@@ -95,7 +94,6 @@ class KalahaBoard:
         print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
         print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
         BP2.reverse()
-        print(self.score())
 
     def move(self, b):
         if b not in self.allowed_moves():
@@ -111,7 +109,6 @@ class KalahaBoard:
 
         current_cup = b
         while stones_to_distribute > 0:
-            
             current_cup = current_cup+1
 
             if current_cup >= len(self.board):
@@ -147,6 +144,7 @@ class KalahaBoard:
 
         if not self._check_board_consistency(self.board):
             raise ValueError('The board is not consistent, some error must have happened. Old Board: ' + str(old_board) + ", move = " + str(b) +", new Board: " + str(self.get_board()))
+
         return True
 
     def get_board(self):
@@ -167,8 +165,7 @@ class KalahaBoard:
                 player_two_empty = False
         
         scores = self.score()
-
-        if scores[0] >=36 or scores[1] >=36:
+        if scores[0] >= 36 or scores[1] >=36:
             return True
 
         return player_one_empty or player_two_empty
@@ -267,23 +264,22 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-        minimax_agent1 = MinimaxAgent(5, 0)
-        minimax_agent2 = MinimaxAgent(5, 1)
+        agent1 = MinimaxAgent(4)
+
         last_invalid_player = None
         invalid_count = 0
         while not board.game_over():
             board.print_board()
             if board.current_player() == 0:
                 print(f'Player {board.current_player() + 1} choose a cup \n')
-                #valid = board.move(random_move(board))
-                valid = board.move(minimax_agent1.get_move(board))
+                valid = board.move(agent1.get_move(board))
                 # valid = board.move(agent1.get_next_move(board))
-                sleep(0.2)
+                sleep(0.1)
             else:
                 print(f'Player {board.current_player() + 1} choose a cup \n')
-                valid = board.move(minimax_agent2.get_move(board))
+                valid = board.move(random_move(board))
                 # valid = board.move(agent2.get_next_move(board))
-                sleep(0.2)
+                sleep(0.1)
                 # valid = board.move(random_move(board))
             if not valid:
                 if last_invalid_player == board.current_player():
@@ -293,7 +289,6 @@ class KalahaFight: #(KalahaBoard):
                     last_invalid_player = board.current_player()
             if invalid_count > 2:
                 break
-            board.print_board()
 
         if invalid_count > 2:
             if last_invalid_player == 0:
