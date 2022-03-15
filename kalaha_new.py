@@ -275,61 +275,83 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-        agent1 = MinimaxAgent(2,alpha_beta_pruning=False)
+        agent1 = MinimaxAgent(3,alpha_beta_pruning=True)
         agent2 = RandomAgent(1)
 
         last_invalid_player = None
         invalid_count = 0
-        plotting_x = np.array([])
-        
-        while not board.game_over():
-            board.print_board()
-            if board.current_player() == 0:
-                #print(f'Player {board.current_player() + 1} choose a cup \n')
-                start_timer = timer()
-                valid = board.move(agent1.get_move(board))
-                end_timer = timer()
-                print(end_timer-start_timer)
-                plotting_x = np.append(plotting_x,(end_timer-start_timer))
 
-                # valid = board.move(agent1.get_next_move(board))
-                # sleep(0.1)
-            else:
-                #print(f'Player {board.current_player() + 1} choose a cup \n')
-                valid = board.move(agent2.get_move(board))
-                # valid = board.move(agent2.get_next_move(board))
-                # sleep(0.1)
-                # valid = board.move(random_move(board))
-            if not valid:
-                if last_invalid_player == board.current_player():
-                    invalid_count += 1
+        x = []
+        # y = []
+        for i in range(10):
+            x_colmun = []
+            # y_column = []
+            while not board.game_over():
+                board.print_board()
+                if board.current_player() == 0:
+                    #print(f'Player {board.current_player() + 1} choose a cup \n')
+                    start_timer = timer()
+                    valid = board.move(agent1.get_move(board))
+                    end_timer = timer()
+                    x_colmun.append(end_timer-start_timer)
+                    #column_x = np.append(column_x,(end_timer-start_timer))
+
+                    # valid = board.move(agent1.get_next_move(board))
+                    # sleep(0.1)
                 else:
-                    invalid_count = 0
-                    last_invalid_player = board.current_player()
-            if invalid_count > 2:
-                break
-            board.print_board()
+                    #print(f'Player {board.current_player() + 1} choose a cup \n')
+                    valid = board.move(agent2.get_move(board))
+                    # valid = board.move(agent2.get_next_move(board))
+                    # sleep(0.1)
+                    # valid = board.move(random_move(board))
+                if not valid:
+                    if last_invalid_player == board.current_player():
+                        invalid_count += 1
+                    else:
+                        invalid_count = 0
+                        last_invalid_player = board.current_player()
+                if invalid_count > 2:
+                    break
+                board.print_board()
 
-        if invalid_count > 2:
-            if last_invalid_player == 0:
-                # wins_agent1 += 1
-                print("player 1 wins")
+            if invalid_count > 2:
+                if last_invalid_player == 0:
+                    # wins_agent1 += 1
+                    print("player 1 wins")
+                else:
+                    # wins_agent2 += 1
+                    print("player 2 wins")
             else:
-                # wins_agent2 += 1
-                print("player 2 wins")
-        else:
-            if board.score()[0] > board.score()[1]:
-                # wins_agent1 += 1
-                print("player 1 wins")
-            elif board.score()[0] < board.score()[1]:
-                # wins_agent2 += 1
-                print("player 2 wins")
-            else:
-                # draws += 1
-                print("its a draw")
-        # current_game += 1
-        plotting_y = np.array([i for i in range(len(plotting_x))])
+                if board.score()[0] > board.score()[1]:
+                    # wins_agent1 += 1
+                    print("player 1 wins")
+                elif board.score()[0] < board.score()[1]:
+                    # wins_agent2 += 1
+                    print("player 2 wins")
+                else:
+                    # draws += 1
+                    print("its a draw")
+            # y.append([i for i in range(len(x_colmun))])
+            x.append(x_colmun)
+
+            #y.append(np.array([i for i in range(len(x_colmun))]))
+            board.reset_board()
+
+        ### appending nan values such that all runs are the same length
+        max_len = len(max(x,key=len))
+        for index,value in enumerate(x):
+            for i in range(max_len):
+                if len(value)<max_len:
+                    x[index].append(np.nan)  
+        x_mean = np.asarray(x)
+        ### finding the averages of all the runs for plotting
+        x_mean = np.nanmean(x,axis=0)
+        y = np.arange(0,max_len,1)
+        plt.plot(y,x_mean)
+        plt.show()
+
         
+
 
 def main():
     random.seed(1)
