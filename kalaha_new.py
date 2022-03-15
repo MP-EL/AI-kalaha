@@ -103,9 +103,10 @@ class MinimaxAgent:
         return best_value
 
 class KalahaBoard:
-    def __init__(self, number_of_cups, number_of_stones):
+    def __init__(self, number_of_cups, number_of_stones, visual = False):
         self.number_of_cups = number_of_cups
         self.stones = number_of_stones
+        self.visual = visual
         #set up board
         self.reset_board()
         self._player_houses = { 0: self.number_of_cups*(1),
@@ -118,23 +119,25 @@ class KalahaBoard:
         self.player = 0
 
     def print_board(self):
-        # os.system('cls' if os.name == 'nt' else 'clear')
-        
-        # BP1 = self.board[0:self.number_of_cups + 1]
-        # BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
-        # # print(BP1)
-        # # print(BP2)
-        # if self.current_player() == 0:
-        #     print("allowed moves", [i + 1 for i in self.allowed_moves()])
-        # else:
-        #     print("allowed moves", self.allowed_moves())
-        # BP2.reverse()
-        # print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
-        # print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
-        # print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
-        # print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
-        # BP2.reverse()
-        pass
+        if self.visual:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            
+            BP1 = self.board[0:self.number_of_cups + 1]
+            BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
+            # print(BP1)
+            # print(BP2)
+            if self.current_player() == 0:
+                print("allowed moves", [i + 1 for i in self.allowed_moves()])
+            else:
+                print("allowed moves", self.allowed_moves())
+            BP2.reverse()
+            print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
+            print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
+            print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
+            print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
+            BP2.reverse()
+        else:
+            pass
 
     def move(self, b):
         if b not in self.allowed_moves():
