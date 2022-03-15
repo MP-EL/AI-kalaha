@@ -3,21 +3,35 @@ import os
 from time import sleep
 import numpy as np
 import random
+from timeit import default_timer as timer
+import matplotlib.pyplot as plt
 
 import sys, signal
+
+
 def signal_handler(signal, frame):
     print("\nprogram exiting gracefully")
     sys.exit()
 signal.signal(signal.SIGINT, signal_handler)
 
 def random_move(board):
-    move = np.random.choice(board.allowed_moves())
+    move = random.choice(board.allowed_moves())
     return move
+
+class RandomAgent:
+    def __init__(self,seed):
+        self.random = random.Random(seed)
+    
+    def get_move(self,board):
+        return self.random.choice(board.allowed_moves())
+
+        
 
 class MinimaxAgent:
     def __init__(self, max_depth=8, alpha_beta_pruning=True):
         self.max_depth = max_depth
         self.alpha_beta_pruning = alpha_beta_pruning
+        self.random = random.Random(1)
 
     def get_move(self, board):
 
@@ -35,7 +49,7 @@ class MinimaxAgent:
         for move_and_score in moves_and_scores:
             if move_and_score[0] == max_score:
                 best_moves.append(move_and_score[1])
-        rand = random.choice([i for i in best_moves])
+        rand = self.random.choice([i for i in best_moves])
         return rand
 
     def _minimax(self, board, is_max_player, current_depth, move, alpha, beta):
@@ -78,22 +92,23 @@ class KalahaBoard:
         self.player = 0
 
     def print_board(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        # os.system('cls' if os.name == 'nt' else 'clear')
         
-        BP1 = self.board[0:self.number_of_cups + 1]
-        BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
-        # print(BP1)
-        # print(BP2)
-        if self.current_player() == 0:
-            print("allowed moves", [i + 1 for i in self.allowed_moves()])
-        else:
-            print("allowed moves", self.allowed_moves())
-        BP2.reverse()
-        print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
-        print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
-        print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
-        print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
-        BP2.reverse()
+        # BP1 = self.board[0:self.number_of_cups + 1]
+        # BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
+        # # print(BP1)
+        # # print(BP2)
+        # if self.current_player() == 0:
+        #     print("allowed moves", [i + 1 for i in self.allowed_moves()])
+        # else:
+        #     print("allowed moves", self.allowed_moves())
+        # BP2.reverse()
+        # print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
+        # print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
+        # print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
+        # print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
+        # BP2.reverse()
+        pass
 
     def move(self, b):
         if b not in self.allowed_moves():
@@ -144,7 +159,6 @@ class KalahaBoard:
 
         if not self._check_board_consistency(self.board):
             raise ValueError('The board is not consistent, some error must have happened. Old Board: ' + str(old_board) + ", move = " + str(b) +", new Board: " + str(self.get_board()))
-
         return True
 
     def get_board(self):
@@ -261,22 +275,30 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-        agent1 = MinimaxAgent()
+        agent1 = MinimaxAgent(2,alpha_beta_pruning=False)
+        agent2 = RandomAgent(1)
 
         last_invalid_player = None
         invalid_count = 0
+        plotting_x = np.array([])
+        
         while not board.game_over():
             board.print_board()
             if board.current_player() == 0:
-                print(f'Player {board.current_player() + 1} choose a cup \n')
+                #print(f'Player {board.current_player() + 1} choose a cup \n')
+                start_timer = timer()
                 valid = board.move(agent1.get_move(board))
+                end_timer = timer()
+                print(end_timer-start_timer)
+                plotting_x = np.append(plotting_x,(end_timer-start_timer))
+
                 # valid = board.move(agent1.get_next_move(board))
-                sleep(0.1)
+                # sleep(0.1)
             else:
-                print(f'Player {board.current_player() + 1} choose a cup \n')
-                valid = board.move(random_move(board))
+                #print(f'Player {board.current_player() + 1} choose a cup \n')
+                valid = board.move(agent2.get_move(board))
                 # valid = board.move(agent2.get_next_move(board))
-                sleep(0.1)
+                # sleep(0.1)
                 # valid = board.move(random_move(board))
             if not valid:
                 if last_invalid_player == board.current_player():
@@ -306,8 +328,11 @@ class KalahaFight: #(KalahaBoard):
                 # draws += 1
                 print("its a draw")
         # current_game += 1
+        plotting_y = np.array([i for i in range(len(plotting_x))])
+        
 
 def main():
+    random.seed(1)
     nr1 = KalahaFight(6, 6)
     nr1.fight()
 
