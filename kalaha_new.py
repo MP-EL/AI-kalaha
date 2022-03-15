@@ -28,53 +28,79 @@ class RandomAgent:
         
 
 class MinimaxAgent:
-    def __init__(self, max_depth=8, alpha_beta_pruning=True):
+    def __init__(self, max_depth=8, alpha_beta_pruning=True, seed=1):
         self.max_depth = max_depth
         self.alpha_beta_pruning = alpha_beta_pruning
-        self.random = random.Random(1)
+        self.random = random.Random(seed)
 
     def get_move(self, board):
-
+        """Gets the best move by performing minimax to retrieve the highest value move.
+        Args:
+            board (KalahaBoard): KalahaBoard class (Use the class in this script).
+        Returns:
+            int: the current best move retrieved from the minimax algo.
+        """
         moves_and_scores = []
         moves = board.allowed_moves()
-        # player = board.current_player()
+        #If there is only 1 legal move pick that move.
         if len(moves) == 1:
             return moves[0]
+        #for every legal move run the minimax algo recursively to test all moves down to the desired depth.
         for move in moves:
             moves_and_scores.append([self._minimax(board, True, 0, move, float('-inf'), float('inf')), move])
+        #get max value of the minimax outputs. 
         max_score = max([i[0] for i in moves_and_scores])
 
-        #vælg et random move ud af dem der har samme score:
         best_moves = []
+        #choose all moves that are equal to max_score
         for move_and_score in moves_and_scores:
             if move_and_score[0] == max_score:
                 best_moves.append(move_and_score[1])
+        #Choose a random move from the max_score moves (For some reason this makes it much stronger than when choosing the first move with the highest score).
         rand = self.random.choice([i for i in best_moves])
         return rand
 
     def _minimax(self, board, is_max_player, current_depth, move, alpha, beta):
+        """Minimax algorithm for a kalaha board. Should not be called standalone but instead called through the get_move function
+
+        Args:
+            board (KalahaBoard): KalahaBoard class.
+            is_max_player (bool): decides whether or not the minimax should run for the maximizing player or not, should always be initiated as True.
+            current_depth (int): current depth of the recursion in minimax.
+            move (int): the move currently being investigated by minimax. 
+            alpha (float): alpha value for minimax algorithm. Should be initiated as float(-'inf')
+            beta (float): beta value for minimax algorithm. Should be initiated as float('inf')
+
+        Returns:
+            int: the current best move retrieved from the minimax algo.
+        """
+        #stop condition
         if current_depth == self.max_depth:
             return board.score()[board.current_player()]
         
+        #Make a copy of the board to test the moves on.
         new_board = board.copy()
         new_board.move(move)
         moves = new_board.allowed_moves()
+        #init -inf og inf values for the minimax algo.
         best_value = float('-inf') if is_max_player else float('inf')
         for move in moves:
             move_score = self._minimax(new_board, not is_max_player, current_depth + 1, move, alpha, beta)
+            #find the max value from the minimax output and perform alpha beta pruning.
             if is_max_player:
                 best_value = max(move_score, best_value)
                 if self.alpha_beta_pruning:
                     alpha = max(alpha, best_value)
                     if beta <= alpha:
                         return best_value
+            #The same as above but with the min part of minimax instead of max
             else:
                 best_value = min(move_score, best_value)
                 if self.alpha_beta_pruning:
                     beta = min(beta, best_value)
                     if beta <= alpha: 
                         return best_value
-        return best_value 
+        return best_value
 
 class KalahaBoard:
     def __init__(self, number_of_cups, number_of_stones):
