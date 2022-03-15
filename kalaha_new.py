@@ -15,8 +15,9 @@ def random_move(board):
     return move
 
 class MinimaxAgent:
-    def __init__(self, max_depth=4):
+    def __init__(self, max_depth=8, alpha_beta_pruning=True):
         self.max_depth = max_depth
+        self.alpha_beta_pruning = alpha_beta_pruning
 
     def get_move(self, board):
 
@@ -26,7 +27,7 @@ class MinimaxAgent:
         if len(moves) == 1:
             return moves[0]
         for move in moves:
-            moves_and_scores.append([self._minimax(board, True, 0, move), move])
+            moves_and_scores.append([self._minimax(board, True, 0, move, float('-inf'), float('inf')), move])
         max_score = max([i[0] for i in moves_and_scores])
 
         #vælg et random move ud af dem der har samme score:
@@ -37,7 +38,7 @@ class MinimaxAgent:
         rand = random.choice([i for i in best_moves])
         return rand
 
-    def _minimax(self, board, is_max_player, current_depth, move):
+    def _minimax(self, board, is_max_player, current_depth, move, alpha, beta):
         if current_depth == self.max_depth:
             return board.score()[board.current_player()]
         
@@ -45,21 +46,20 @@ class MinimaxAgent:
         new_board.move(move)
         moves = new_board.allowed_moves()
         best_value = float('-inf') if is_max_player else float('inf')
-
         for move in moves:
-            move_score = self._minimax(new_board, not is_max_player, current_depth + 1, move)
-
-            # if is_max_player and best_value <= move_score:
-            #     best_value = move_score
-            #     move_target = move
-            # elif (not is_max_player) and best_value >= move_score:
-            #     best_value = move_score
-            #     move_target = move
+            move_score = self._minimax(new_board, not is_max_player, current_depth + 1, move, alpha, beta)
             if is_max_player:
                 best_value = max(move_score, best_value)
+                if self.alpha_beta_pruning:
+                    alpha = max(alpha, best_value)
+                    if beta <= alpha:
+                        return best_value
             else:
                 best_value = min(move_score, best_value)
-
+                if self.alpha_beta_pruning:
+                    beta = min(beta, best_value)
+                    if beta <= alpha: 
+                        return best_value
         return best_value 
 
 class KalahaBoard:
@@ -250,11 +250,8 @@ class KalahaBoard:
 
     def copy(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-
         board.set_board(list(self.board))
         board.set_current_player(self.player)
-
-
         return board
 
 class KalahaFight: #(KalahaBoard):
@@ -264,7 +261,7 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-        agent1 = MinimaxAgent(4)
+        agent1 = MinimaxAgent()
 
         last_invalid_player = None
         invalid_count = 0
@@ -289,6 +286,7 @@ class KalahaFight: #(KalahaBoard):
                     last_invalid_player = board.current_player()
             if invalid_count > 2:
                 break
+            board.print_board()
 
         if invalid_count > 2:
             if last_invalid_player == 0:
