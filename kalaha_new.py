@@ -58,6 +58,8 @@ class MinimaxAgent:
     def __init__(self, max_depth=5, alpha_beta_pruning=True):
         self.max_depth = max_depth
         self.alpha_beta_pruning = alpha_beta_pruning
+        self.upper = 100
+        self.lower = -100
     
     def heuristic(self, board):
         player = board.current_player()
@@ -81,7 +83,7 @@ class MinimaxAgent:
             return moves[0]
         #for every legal move run the minimax algo recursively to test all moves down to the desired depth.
         for move in moves:
-            moves_and_scores.append([self._minimax(board, False, 0, move, float('-inf'), float('inf')), move])
+            moves_and_scores.append([self._minimax(board, False, 0, move, self.lower, self.upper), move])
         #get max value of the minimax outputs. 
         max_score = max([i[0] for i in moves_and_scores])
 
@@ -121,7 +123,7 @@ class MinimaxAgent:
         
         #find the max value from the minimax output and perform alpha beta pruning.
         if is_max_player:
-            best_value = -100
+            best_value = self.lower
             for move in moves:
                 best_value = np.max([best_value, self._minimax(new_board, False, current_depth + 1, move, alpha, beta)])
                 if self.alpha_beta_pruning:
@@ -131,7 +133,7 @@ class MinimaxAgent:
                         return best_value
         #The same as above but with the min part of minimax instead of max
         else:
-            best_value = 100
+            best_value = self.upper
             for move in moves:
                 best_value = np.min([best_value, self._minimax(new_board, True, current_depth + 1, move, alpha, beta)])
                 if self.alpha_beta_pruning:
@@ -305,11 +307,11 @@ class KalahaFight: #(KalahaBoard):
         self.stones = number_of_stones
     
     def fight(self):
-        board = KalahaBoard(self.number_of_cups, self.stones, visual=True)
+        board = KalahaBoard(self.number_of_cups, self.stones, visual=False)
+        agent1 = MinimaxAgent(3,alpha_beta_pruning=True)
         agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
-        # agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
         # agent2 = RandomAgent()
-        agent1 = HumanAgent()
+        # agent1 = HumanAgent()
         p1 = 0
         p2 = 0
         games = 0
