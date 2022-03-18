@@ -1,3 +1,4 @@
+import os
 from time import sleep
 import numpy as np
 from timeit import default_timer as timer
@@ -149,7 +150,7 @@ class KalahaBoard:
         self.visual = visual
         #set up board
         self.reset_board()
-        self._player_houses = { 0: self.number_of_cups*(1),
+        self._point_cups = { 0: self.number_of_cups*(1),
                                 1: self.number_of_cups*(2) + 1}
         
     def reset_board(self):
@@ -160,7 +161,7 @@ class KalahaBoard:
 
     def print_board(self):
         if self.visual:
-            # os.system('cls' if os.name == 'nt' else 'clear')
+            os.system('cls' if os.name == 'nt' else 'clear')
             BP1 = self.board[0:self.number_of_cups + 1]
             BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
             # print(BP1)
@@ -197,14 +198,14 @@ class KalahaBoard:
             if current_cup >= len(self.board):
                 current_cup -= len(self.board)
 
-            if current_cup == self._get_house(other_player):
+            if current_cup == self._get_point_cup(other_player):
                 continue
 
             self.board[current_cup] += 1
             stones_to_distribute -= 1
 
         # stone in empty cup -> take stones on the opponents side
-        if ( current_cup != self.get_house_id(self.current_player()) and
+        if ( current_cup != self.point_cup_id(self.current_player()) and
                 self.board[current_cup] == 1 and
                 current_cup >= self._get_first_cup(self.current_player()) and
                 current_cup < self._get_last_cup(self.current_player())):
@@ -212,17 +213,17 @@ class KalahaBoard:
             if opposite_cup >= len(self.board):
                 opposite_cup -= len(self.board)
             if self.board[opposite_cup] > 0:
-                self.board[self._get_house(self.current_player())] += self.board[opposite_cup] + self.board[current_cup]
+                self.board[self._get_point_cup(self.current_player())] += self.board[opposite_cup] + self.board[current_cup]
                 self.board[opposite_cup] = 0
                 self.board[current_cup] = 0
 
         # All stones empty, opponent takes all his stones
         if self._are_the_cups_empty(self.current_player()):
             for b in range(self.number_of_cups):
-                self.board[self._get_house(other_player)] += self.board[other_player*self.number_of_cups + other_player + b]
+                self.board[self._get_point_cup(other_player)] += self.board[other_player*self.number_of_cups + other_player + b]
                 self.board[other_player*self.number_of_cups + other_player + b] = 0
 
-        if current_cup != self.get_house_id(self.current_player()):
+        if current_cup != self.point_cup_id(self.current_player()):
             self.player = 1 if self.current_player() == 0 else 0
 
         return True
@@ -273,11 +274,11 @@ class KalahaBoard:
     def current_player_score(self):
         return self.score()[self.current_player()]
 
-    def _get_house(self, player):
-        return self._player_houses[player]
+    def _get_point_cup(self, player):
+        return self._point_cups[player]
 
-    def get_house_id(self, player):
-        return self._get_house(player)
+    def point_cup_id(self, player):
+        return self._get_point_cup(player)
 
     def _get_first_cup(self, player):
         return player*self.number_of_cups + player
