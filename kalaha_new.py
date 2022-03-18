@@ -19,19 +19,33 @@ def random_move(board):
     return move
 
 class RandomAgent:
-    def __init__(self,seed):
+    def __init__(self,seed = 1):
         self.random = random.Random(seed)
     
     def get_move(self,board):
         return self.random.choice(board.allowed_moves())
 
-        
+class MaxAgent:
+    def __init__(self):
+        pass
+    def get_move(self, board):
+        player = board.current_player()
+        get_board = board.get_board()
+        if player == 0:
+            part = get_board[0:6]
+        elif player == 1:
+            part = get_board[7:-1]
+            part = part.reverse()
+        moves = board.allowed_moves()
+        index = np.argmax(part)
+        return moves[index]
 
 class MinimaxAgent:
     def __init__(self, max_depth=8, alpha_beta_pruning=True, seed=1):
         self.max_depth = max_depth
         self.alpha_beta_pruning = alpha_beta_pruning
-        self.random = random.Random(seed)
+        self.seed = seed
+        self.random = random.Random(self.seed)
 
     def get_move(self, board):
         """Gets the best move by performing minimax to retrieve the highest value move.
@@ -103,9 +117,10 @@ class MinimaxAgent:
         return best_value
 
 class KalahaBoard:
-    def __init__(self, number_of_cups, number_of_stones):
+    def __init__(self, number_of_cups, number_of_stones, visual = False):
         self.number_of_cups = number_of_cups
         self.stones = number_of_stones
+        self.visual = visual
         #set up board
         self.reset_board()
         self._player_houses = { 0: self.number_of_cups*(1),
@@ -118,23 +133,25 @@ class KalahaBoard:
         self.player = 0
 
     def print_board(self):
-        # os.system('cls' if os.name == 'nt' else 'clear')
-        
-        # BP1 = self.board[0:self.number_of_cups + 1]
-        # BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
-        # # print(BP1)
-        # # print(BP2)
-        # if self.current_player() == 0:
-        #     print("allowed moves", [i + 1 for i in self.allowed_moves()])
-        # else:
-        #     print("allowed moves", self.allowed_moves())
-        # BP2.reverse()
-        # print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
-        # print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
-        # print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
-        # print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
-        # BP2.reverse()
-        pass
+        if self.visual:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            
+            BP1 = self.board[0:self.number_of_cups + 1]
+            BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
+            # print(BP1)
+            # print(BP2)
+            if self.current_player() == 0:
+                print("allowed moves", [i + 1 for i in self.allowed_moves()])
+            else:
+                print("allowed moves", self.allowed_moves())
+            BP2.reverse()
+            print(f"\nPocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)][::-1])}")
+            print('P2 -->', BP2[:1], BP2[1:self.number_of_cups+1])
+            print('P1 --> ', '  ', BP1[0:self.number_of_cups],BP1[self.number_of_cups:])
+            print(f"Pocket # :  {'  '.join([str(i + 1) for i in range(self.number_of_cups)])}")
+            BP2.reverse()
+        else:
+            pass
 
     def move(self, b):
         if b not in self.allowed_moves():
@@ -301,8 +318,8 @@ class KalahaFight: #(KalahaBoard):
     
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones)
-        agent1 = MinimaxAgent(3,alpha_beta_pruning=True)
-        agent2 = RandomAgent(1)
+        agent1 = MinimaxAgent(6,alpha_beta_pruning=True)
+        agent2 = RandomAgent()
 
         last_invalid_player = None
         invalid_count = 0
