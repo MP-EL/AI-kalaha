@@ -307,10 +307,8 @@ class KalahaFight: #(KalahaBoard):
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones, visual=False)
         agent1 = MinimaxAgent(4,alpha_beta_pruning=True)
-        agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
-        # agent2 = RandomAgent()
-        last_invalid_player = None
-        invalid_count = 0
+        # agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
+        agent2 = RandomAgent()
         p1 = 0
         p2 = 0
         games = 0
@@ -344,8 +342,8 @@ class KalahaFight: #(KalahaBoard):
         print(f"P2 win %: {(p2 / games):.2f}")
         print(f"Draw   %: {((games - (p1 + p2)) / games):.2f}")
 
-def run_main():
+def main():
     nr1 = KalahaFight(6, 6)
     nr1.fight()
 
-run_main()
+main()
