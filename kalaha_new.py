@@ -184,8 +184,6 @@ class KalahaBoard:
             print("move not allowed")
             return False
 
-        old_board = list(self.board)
-
         stones_to_distribute = self.board[b]
         self.board[b] = 0
 
