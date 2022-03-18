@@ -1,11 +1,7 @@
-import enum
-import os
 from time import sleep
 import numpy as np
-import random
 from timeit import default_timer as timer
 from copy import deepcopy
-from functools import cache, lru_cache
 
 import sys, signal
 
@@ -14,6 +10,27 @@ def signal_handler(signal, frame):
     print("\nprogram exiting gracefully")
     sys.exit()
 signal.signal(signal.SIGINT, signal_handler)
+
+class HumanAgent:
+    def __init__(self):
+        pass
+    
+    def get_move(self, board): 
+        while True:
+            question = input(f'Player {board.current_player() + 1} choose a cup \n')
+            try:
+                question = int(question)
+                # assert isinstance(question, int)
+                if question in [i + 1 for i in range(board.number_of_cups)]:
+                    if board.current_player() == 0:
+                        question -= 1
+                        break
+                    elif board.current_player() != 0:
+                        question += 6
+                        break
+            except:
+                print("Pick a valid number")
+        return question
 
 class RandomAgent:
     def __init__(self):
@@ -260,23 +277,6 @@ class KalahaBoard:
     def get_house_id(self, player):
         return self._get_house(player)
 
-    def get_input(self): 
-        while True:
-            question = input(f'Player {self.current_player() + 1} choose a cup \n')
-            try:
-                question = int(question)
-                # assert isinstance(question, int)
-                if question in [i + 1 for i in range(self.number_of_cups)]:
-                    if self.current_player() == 0:
-                        question -= 1
-                        break
-                    elif self.current_player() != 0:
-                        question += 6
-                        break
-            except:
-                print("Pick a valid number")
-        return question
-
     def _get_first_cup(self, player):
         return player*self.number_of_cups + player
 
@@ -305,10 +305,11 @@ class KalahaFight: #(KalahaBoard):
         self.stones = number_of_stones
     
     def fight(self):
-        board = KalahaBoard(self.number_of_cups, self.stones, visual=False)
-        agent1 = MinimaxAgent(4,alpha_beta_pruning=True)
+        board = KalahaBoard(self.number_of_cups, self.stones, visual=True)
+        agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
         # agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
-        agent2 = RandomAgent()
+        # agent2 = RandomAgent()
+        agent1 = HumanAgent()
         p1 = 0
         p2 = 0
         games = 0
