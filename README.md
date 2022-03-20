@@ -14,7 +14,7 @@ other arguments are
 
 To run 2 minimax against eachother with specified depths:
 ```
-python3 kalaha_new.py 3 3 --d1=6 --d2=4 --rounds=20
+python3 kalaha_new.py 3 3 --d1=2 --d2=4 -r=10 -p
 ```
 To run human vs minimax:
 ```
