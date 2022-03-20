@@ -166,7 +166,7 @@ class KalahaBoard:
 
     def print_board(self):
         if self.visual:
-            os.system('cls' if os.name == 'nt' else 'clear')
+            # os.system('cls' if os.name == 'nt' else 'clear')
             BP1 = self.board[0:self.number_of_cups + 1]
             BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
             # print(BP1)
@@ -206,19 +206,29 @@ class KalahaBoard:
 
             self.board[current_cup] += 1
             stones_to_distribute -= 1
-
-        # stone in empty cup -> take stones on the opponents side
+        
         if ( current_cup != self.point_cup_id(self.current_player()) and
                 self.board[current_cup] == 1 and
                 current_cup >= self._get_first_cup(self.current_player()) and
-                current_cup < self._get_last_cup(self.current_player())):
-            opposite_cup = current_cup + self.number_of_cups+1
-            if opposite_cup >= len(self.board):
-                opposite_cup -= len(self.board)
-            if self.board[opposite_cup] > 0:
-                self.board[self._get_point_cup(self.current_player())] += self.board[opposite_cup] + self.board[current_cup]
-                self.board[opposite_cup] = 0
-                self.board[current_cup] = 0
+                current_cup < self._get_last_cup(self.current_player())):   
+            BP1 = self.board[0:self.number_of_cups + 1]
+            BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
+            if self.current_player() == 0:
+                BP2.reverse()
+                BP1[self.number_of_cups] += BP2[current_cup + 1] + BP1[current_cup]
+                # self.board[self._get_point_cup(self.current_player())] += BP2[current_cup + 1] + BP1[current_cup]
+                BP2[current_cup + 1] = 0
+                BP1[current_cup] = 0
+                BP2.reverse()
+                self.board = BP1 + BP2
+            elif self.current_player() == 1:
+                BP1.reverse()
+                BP2[self.number_of_cups] += BP2[current_cup - (self.number_of_cups + 1)] + BP1[current_cup - (self.number_of_cups + 1) + 1]
+                # self.board[self._get_point_cup(self.current_player())] += BP2[current_cup + 1] + BP1[current_cup]
+                BP2[current_cup - (self.number_of_cups + 1)] = 0
+                BP1[current_cup - (self.number_of_cups + 1) + 1] = 0
+                BP1.reverse()
+                self.board = BP1 + BP2
 
         # All stones empty, opponent takes all his stones
         if self._are_the_cups_empty(self.current_player()):
