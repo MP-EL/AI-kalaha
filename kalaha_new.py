@@ -380,9 +380,9 @@ if __name__ == '__main__':
     parser.add_argument('SecondAgent', type=int, help="Choosing between 0: HumanAgent, 1: RandomAgent, 2: MaxAgent, 3: MinimaxAgent")
     parser.add_argument('--d2', type=int, help="depth of second agent (Only does something for minimax)")
 
-    parser.add_argument('--rounds', type=int, help="number of rounds to play")
+    parser.add_argument('--rounds', '-r', type=int, help="number of rounds to play")
 
-    parser.add_argument('--pruning', help="alpha beta pruning")
+    parser.add_argument('--pruning', '-p', help="alpha beta pruning")
     parser.add_argument('--visual', '-v', action='store_true', help="True to see a board and omit this option if you dont want to see the board")
 
     args = parser.parse_args(sys.argv[1:])
