@@ -1,11 +1,12 @@
 import os
+from random import Random
 from time import sleep
+from xml.etree.ElementInclude import default_loader
 import numpy as np
 from timeit import default_timer as timer
 from copy import deepcopy
-
+import argparse
 import sys, signal
-
 
 def signal_handler(signal, frame):
     print("\nprogram exiting gracefully")
@@ -56,11 +57,15 @@ class MaxAgent:
         return moves[index]
 
 class MinimaxAgent:
-    def __init__(self, max_depth=5, alpha_beta_pruning=True):
-        self.max_depth = max_depth
+    def __init__(self, alpha_beta_pruning=True):
+        self.max_depth = 4
         self.alpha_beta_pruning = alpha_beta_pruning
         self.upper = 100
         self.lower = -100
+    
+    def set_depth_and_pruning(self, depth, pruning):
+        self.alpha_beta_pruning = pruning
+        self.max_depth = depth
     
     def heuristic(self, board):
         player = board.current_player()
@@ -301,29 +306,41 @@ class KalahaBoard:
         return board
 
 class KalahaFight: #(KalahaBoard):
-    def __init__(self, number_of_cups, number_of_stones):
+    def __init__(self, number_of_cups, number_of_stones, rounds, a1, d1, a2, d2, pruning=True, visual=True):
+        self.a1 = a1
+        self.d1 = d1
+        self.a2 = a2
+        self.d2 = d2
+        self.rounds = rounds
+        self.visual = visual
+        self.pruning = pruning
         self.number_of_cups = number_of_cups
         self.stones = number_of_stones
     
     def fight(self):
-        board = KalahaBoard(self.number_of_cups, self.stones, visual=False)
-        agent1 = MinimaxAgent(3,alpha_beta_pruning=True)
-        agent2 = MinimaxAgent(4,alpha_beta_pruning=True)
-        # agent2 = RandomAgent()
-        # agent1 = HumanAgent()
+        board = KalahaBoard(self.number_of_cups, self.stones, visual=self.visual)
+
+        agents = [HumanAgent(), RandomAgent(), MaxAgent(), MinimaxAgent()]
+
+        agent1 = agents[self.a1]
+        if self.a1 == 3:
+            agent1.set_depth_and_pruning(self.d1, self.pruning)
+        agent2 = agents[self.a2]
+        if self.a2 == 3:
+            agent2.set_depth_and_pruning(self.d2, self.pruning)
         p1 = 0
         p2 = 0
         games = 0
-        for i in range(20):
-            timers = []
+        timers = []
+        for i in range(self.rounds):
+            
+            start_timer = timer()
             while not board.game_over():
                 board.print_board()
                 
                 if board.current_player() == 0:
-                    start_timer = timer()
                     valid = board.move(agent1.get_move(board))
-                    end_timer = timer()
-                    timers.append(end_timer - start_timer)
+                    # timers.append(end_timer - start_timer)
                 else:
                     valid = board.move(agent2.get_move(board))
                 
@@ -338,14 +355,38 @@ class KalahaFight: #(KalahaBoard):
             else:
                 print("its a draw")
                 games += 1
-            print(f"Game took {np.sum(timers):.2f} seconds")
+            end_timer = timer()
+            timers.append(end_timer - start_timer)
+            print(f"Game took {(end_timer - start_timer):.3f} seconds")
+            if self.rounds != 1 and ((self.a1 or self.a2) == 0):
+                input(f"Game {i+1} / {self.rounds}. Press enter to continue to next game")
             board.reset_board()
         print(f"P1 win %: {(p1 / games):.2f}")
         print(f"P2 win %: {(p2 / games):.2f}")
         print(f"Draw   %: {((games - (p1 + p2)) / games):.2f}")
+        print(f"Total play time: {np.sum(timers):.3f}")
 
-def main():
-    nr1 = KalahaFight(6, 6)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description= "arguments for running kalaha AI \n Usage could be: 'python3 kalaha_new.py 3 3 --d1=4 --d2=4 --pruning False' \n\n The first 2 arguments are the agents so 3 equals Minimax, the depth is optional as d1 or d2 depending on the depths for each agent and pruning can be turned on or off.")
+    parser.add_argument('FirstAgent', type=int, help="Choosing between 0: HumanAgent, 1: RandomAgent, 2: MaxAgent, 3: MinimaxAgent")
+    parser.add_argument('--d1', type=int, help="depth of first agent (Only does something for minimax)")
+
+    parser.add_argument('SecondAgent', type=int, help="Choosing between 0: HumanAgent, 1: RandomAgent, 2: MaxAgent, 3: MinimaxAgent")
+    parser.add_argument('--d2', type=int, help="depth of second agent (Only does something for minimax)")
+
+    parser.add_argument('--rounds', type=int, help="number of rounds to play")
+
+    parser.add_argument('--pruning', help="alpha beta pruning")
+    parser.add_argument('--visual', '-v', action='store_true', help="True to see a board and omit this option if you dont want to see the board")
+
+    args = parser.parse_args(sys.argv[1:])
+    agent1 = args.FirstAgent
+    agent2 = args.SecondAgent
+    depth1 = args.d1
+    depth2 = args.d2
+    pruning = args.pruning
+    visual = args.visual
+    rounds = args.rounds if args.rounds != None else 1
+    
+    nr1 = KalahaFight(6, 6, rounds, a1=agent1, d1=depth1, a2=agent2, d2=depth2, pruning=pruning, visual=visual)
     nr1.fight()
-
-main()
