@@ -349,7 +349,7 @@ class KalahaFight: #(KalahaBoard):
                     # timers.append(end_timer - start_timer)
                 else:
                     valid = board.move(agent2.get_move(board))
-                
+
             if board.score()[0] > board.score()[1]:
                 print("player 1 wins")
                 p1 += 1
@@ -382,7 +382,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--rounds', '-r', type=int, help="number of rounds to play")
 
-    parser.add_argument('--pruning', '-p', help="alpha beta pruning")
+    parser.add_argument('--pruning', '-p', action='store_true', help="alpha beta pruning")
     parser.add_argument('--visual', '-v', action='store_true', help="True to see a board and omit this option if you dont want to see the board")
 
     args = parser.parse_args(sys.argv[1:])
