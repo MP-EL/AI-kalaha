@@ -1,5 +1,17 @@
 # AI-kalaha
 
+The first 2 arguments are the types of Agents [0: HumanAgent, 1: RandomAgent, 2: MaxAgent, 3: MinimaxAgent]
+
+--d1 or --d2 is the depth of each agent (Only changes something when using 3: MinimaxAgent)
+
+other arguments are 
+
+--rounds or -r, number of games to be played before giving win % for each agent.
+
+--visual or -v, whether or not to show the game states when running.
+
+--pruning or -p, whether or not to use alpha-beta pruning for the Minimax agents
+
 To run 2 minimax against eachother with specified depths:
 ```
 python3 kalaha_new.py 3 3 --d1=6 --d2=4 --rounds=20
