@@ -1,7 +1,6 @@
 import os
 from random import Random
 from time import sleep
-from xml.etree.ElementInclude import default_loader
 import numpy as np
 from timeit import default_timer as timer
 from copy import deepcopy
