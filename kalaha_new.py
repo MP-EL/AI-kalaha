@@ -47,14 +47,16 @@ class MaxAgent:
     def get_move(self, board):
         player = board.current_player()
         get_board = board.get_board()
-        if player == 0:
-            part = get_board[0:6]
-        elif player == 1:
-            part = get_board[7:-1]
-            part = part.reverse()
         moves = board.allowed_moves()
-        index = np.argmax(part)
-        return moves[index]
+        if player == 0:
+            part = get_board[0:board.number_of_cups]
+            index = np.argmax(part)
+            return moves[index-1]
+        elif player == 1:
+            part = get_board[board.number_of_cups + 1:-1]
+            part = part.reverse()
+            index = np.argmax(part)
+            return moves[index-1]
 
 class MinimaxAgent:
     def __init__(self, alpha_beta_pruning=True):
@@ -349,7 +351,7 @@ class KalahaFight: #(KalahaBoard):
                     # timers.append(end_timer - start_timer)
                 else:
                     valid = board.move(agent2.get_move(board))
-
+                board.print_board()
             if board.score()[0] > board.score()[1]:
                 print("player 1 wins")
                 p1 += 1
@@ -394,5 +396,5 @@ if __name__ == '__main__':
     visual = args.visual
     rounds = args.rounds if args.rounds != None else 1
     
-    nr1 = KalahaFight(6, 6, rounds, a1=agent1, d1=depth1, a2=agent2, d2=depth2, pruning=pruning, visual=visual)
+    nr1 = KalahaFight(7, 6, rounds, a1=agent1, d1=depth1, a2=agent2, d2=depth2, pruning=pruning, visual=visual)
     nr1.fight()
