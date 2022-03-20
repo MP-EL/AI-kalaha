@@ -166,11 +166,9 @@ class KalahaBoard:
 
     def print_board(self):
         if self.visual:
-            # os.system('cls' if os.name == 'nt' else 'clear')
+            os.system('cls' if os.name == 'nt' else 'clear')
             BP1 = self.board[0:self.number_of_cups + 1]
             BP2 = self.board[1+self.number_of_cups: self.number_of_cups*2 + 2]
-            # print(BP1)
-            # print(BP2)
             if self.current_player() == 0:
                 print("allowed moves", [i + 1 for i in self.allowed_moves()])
             else:
@@ -216,7 +214,6 @@ class KalahaBoard:
             if self.current_player() == 0:
                 BP2.reverse()
                 BP1[self.number_of_cups] += BP2[current_cup + 1] + BP1[current_cup]
-                # self.board[self._get_point_cup(self.current_player())] += BP2[current_cup + 1] + BP1[current_cup]
                 BP2[current_cup + 1] = 0
                 BP1[current_cup] = 0
                 BP2.reverse()
@@ -224,7 +221,6 @@ class KalahaBoard:
             elif self.current_player() == 1:
                 BP1.reverse()
                 BP2[self.number_of_cups] += BP2[current_cup - (self.number_of_cups + 1)] + BP1[current_cup - (self.number_of_cups + 1) + 1]
-                # self.board[self._get_point_cup(self.current_player())] += BP2[current_cup + 1] + BP1[current_cup]
                 BP2[current_cup - (self.number_of_cups + 1)] = 0
                 BP1[current_cup - (self.number_of_cups + 1) + 1] = 0
                 BP1.reverse()
