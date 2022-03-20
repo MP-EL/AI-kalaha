@@ -135,7 +135,6 @@ class MinimaxAgent:
             for move in moves:
                 best_value = np.max([best_value, self._minimax(new_board, False, current_depth + 1, move, alpha, beta)])
                 if self.alpha_beta_pruning:
-                    
                     alpha = np.max([best_value, alpha])
                     if beta <= alpha:
                         return best_value
@@ -328,12 +327,12 @@ class KalahaFight: #(KalahaBoard):
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones, visual=self.visual)
 
-        agents = [HumanAgent(), RandomAgent(), MaxAgent(), MinimaxAgent()]
+        agents = [HumanAgent, RandomAgent, MaxAgent, MinimaxAgent]
 
-        agent1 = agents[self.a1]
+        agent1 = agents[self.a1]()
         if self.a1 == 3:
             agent1.set_depth_and_pruning(self.d1, self.pruning)
-        agent2 = agents[self.a2]
+        agent2 = agents[self.a2]()
         if self.a2 == 3:
             agent2.set_depth_and_pruning(self.d2, self.pruning)
         p1 = 0
