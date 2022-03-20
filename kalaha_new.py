@@ -58,22 +58,24 @@ class MaxAgent:
             return moves[index-1]
 
 class MinimaxAgent:
-    def __init__(self, alpha_beta_pruning=True):
-        self.max_depth = 4
-        self.alpha_beta_pruning = alpha_beta_pruning
-        self.upper = 100
-        self.lower = -100
-    
-    def set_depth_and_pruning(self, depth, pruning):
-        self.alpha_beta_pruning = pruning
+    def __init__(self, depth, alpha_beta_pruning=True):
         self.max_depth = depth
+        self.alpha_beta_pruning = alpha_beta_pruning
+        self.upper = 1000
+        self.lower = -1000
+    
+    # def set_depth_and_pruning(self, depth, pruning):
+    #     self.alpha_beta_pruning = pruning
+    #     self.max_depth = depth
     
     def heuristic(self, board):
         player = board.current_player()
         if player == self.original_player:
-            return board.score()[player] - board.score()[~player]
+            val = board.score()[player] - board.score()[~player]
         else:
-            return board.score()[~player] - board.score()[player]
+            val = board.score()[~player] - board.score()[player]
+        # print("heuristic value", val)
+        return np.abs(val)
 
     def get_move(self, board):
         """Gets the best move by performing minimax to retrieve the highest value move.
@@ -84,13 +86,13 @@ class MinimaxAgent:
         """
         moves_and_scores = []
         moves = board.allowed_moves()
-        self.original_player = board.current_player()
+        original_player = board.current_player()
         #If there is only 1 legal move pick that move.
         if len(moves) == 1:
             return moves[0]
         #for every legal move run the minimax algo recursively to test all moves down to the desired depth.
         for move in moves:
-            moves_and_scores.append([self._minimax(board, False, 0, move, self.lower, self.upper), move])
+            moves_and_scores.append([self._minimax(board, original_player, 0, move, self.lower, self.upper), move])
         #get max value of the minimax outputs. 
         max_score = max([i[0] for i in moves_and_scores])
 
@@ -103,12 +105,12 @@ class MinimaxAgent:
         rand = np.random.choice([i for i in best_moves])
         return rand
 
-    def _minimax(self, board, is_max_player, current_depth, move, alpha, beta):
+    def _minimax(self, board, original_player, current_depth, move, alpha, beta):
         """Minimax algorithm for a kalaha board. Should not be called standalone but instead called through the get_move function
 
         Args:
             board (KalahaBoard): KalahaBoard class.
-            is_max_player (bool): decides whether or not the minimax should run for the maximizing player or not, should always be initiated as True.
+            player (bool): decides whether or not the minimax should run for the maximizing player or not, should always be initiated as True.
             current_depth (int): current depth of the recursion in minimax.
             move (int): the move currently being investigated by minimax. 
             alpha (float): alpha value for minimax algorithm. Should be initiated as float(-'inf')
@@ -119,20 +121,19 @@ class MinimaxAgent:
         """
         #stop condition
         if current_depth == self.max_depth:
-            return self.heuristic(board)
-            # return board.score()[board.current_player()]
+            # return self.heuristic(board)
+            return board.score()[original_player]
         
         #Make a copy of the board to test the moves on.
         # new_board = board.copy()
         new_board = deepcopy(board)
         new_board.move(move)
-        moves = new_board.allowed_moves()
-        
+        moves = new_board.allowed_moves()        
         #find the max value from the minimax output and perform alpha beta pruning.
-        if is_max_player:
+        if original_player == new_board.current_player():
             best_value = self.lower
             for move in moves:
-                best_value = np.max([best_value, self._minimax(new_board, False, current_depth + 1, move, alpha, beta)])
+                best_value = np.max([best_value, self._minimax(new_board, original_player, current_depth + 1, move, alpha, beta)])
                 if self.alpha_beta_pruning:
                     alpha = np.max([best_value, alpha])
                     if beta <= alpha:
@@ -141,7 +142,7 @@ class MinimaxAgent:
         else:
             best_value = self.upper
             for move in moves:
-                best_value = np.min([best_value, self._minimax(new_board, True, current_depth + 1, move, alpha, beta)])
+                best_value = np.min([best_value, self._minimax(new_board, original_player, current_depth + 1, move, alpha, beta)])
                 if self.alpha_beta_pruning:
                     beta = np.min([best_value, beta])
                     if beta <= alpha: 
@@ -326,14 +327,24 @@ class KalahaFight: #(KalahaBoard):
     def fight(self):
         board = KalahaBoard(self.number_of_cups, self.stones, visual=self.visual)
 
-        agents = [HumanAgent, RandomAgent, MaxAgent, MinimaxAgent]
+        if self.a1 == 0:
+            agent1 = HumanAgent()
+        elif self.a1 == 1:
+            agent1 = RandomAgent()
+        elif self.a1 == 2:
+            agent1 = MaxAgent()
+        elif self.a1 == 3:
+            agent1 = MinimaxAgent(self.d1, self.pruning)
 
-        agent1 = agents[self.a1]()
-        if self.a1 == 3:
-            agent1.set_depth_and_pruning(self.d1, self.pruning)
-        agent2 = agents[self.a2]()
-        if self.a2 == 3:
-            agent2.set_depth_and_pruning(self.d2, self.pruning)
+        if self.a2 == 0:
+            agent2 = HumanAgent()
+        elif self.a2 == 1:
+            agent2 = RandomAgent()
+        elif self.a2 == 2:
+            agent2 = MaxAgent()
+        elif self.a2 == 3:
+            agent2 = MinimaxAgent(self.d2, self.pruning)
+
         p1 = 0
         p2 = 0
         games = 0
@@ -394,5 +405,5 @@ if __name__ == '__main__':
     visual = args.visual
     rounds = args.rounds if args.rounds != None else 1
     
-    nr1 = KalahaFight(7, 6, rounds, a1=agent1, d1=depth1, a2=agent2, d2=depth2, pruning=pruning, visual=visual)
+    nr1 = KalahaFight(6, 6, rounds, a1=agent1, d1=depth1, a2=agent2, d2=depth2, pruning=pruning, visual=visual)
     nr1.fight()
