@@ -384,7 +384,7 @@ class KalahaFight: #(KalahaBoard):
         print(f"Total play time: {np.sum(timers):.3f}")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description= "arguments for running kalaha AI \n Usage could be: 'python3 kalaha_new.py 3 3 --d1=4 --d2=4 --pruning False' \n\n The first 2 arguments are the agents so 3 equals Minimax, the depth is optional as d1 or d2 depending on the depths for each agent and pruning can be turned on or off.")
+    parser = argparse.ArgumentParser(description= "arguments for running kalaha AI \n Usage could be: 'python3 kalaha.py 3 3 --d1=4 --d2=4 --pruning False' \n\n The first 2 arguments are the agents so 3 equals Minimax, the depth is optional as d1 or d2 depending on the depths for each agent and pruning can be turned on or off.")
     parser.add_argument('FirstAgent', type=int, help="Choosing between 0: HumanAgent, 1: RandomAgent, 2: MaxAgent, 3: MinimaxAgent")
     parser.add_argument('--d1', type=int, help="depth of first agent (Only does something for minimax)")
 
