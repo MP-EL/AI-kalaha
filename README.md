@@ -12,13 +12,15 @@ other arguments are
 
 --pruning or -p, whether or not to use alpha-beta pruning for the Minimax agents
 
+Run the program from the terminal (either windows or linux)
+
 To run 2 minimax against eachother with specified depths:
 ```
-python3 kalaha_new.py 3 3 --d1=2 --d2=4 -r=10 -p
+python kalaha_new.py 3 3 --d1=2 --d2=4 -r=10 -p
 ```
 To run human vs minimax:
 ```
-python3 kalaha_new.py 0 3 --d2=4 -v -p
+python kalaha_new.py 0 3 --d2=4 -v -p
 ```
 otherwise see python3 kalaha_new.py -h for more options
 
